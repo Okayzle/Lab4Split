@@ -11,24 +11,24 @@
 class Location {
 
 private:
-    int myRow;
-    int myCol;
-    int myRobot;
+    int myRow, myCol, myRobot;
     char myToken;
-
-public:
     bool hasRob;
 
+public:
     Location(int row, int col, char token);
-    void setToken(int someNum);
 
     int col();
     int row();
+
     char display();
     char token();
+
+    void setToken(int someNum);
     void enter(int RobotNum);
     void takeGold();
     void vacate();
+
     bool hasGold();
     bool hasMountain();
     bool occupied();

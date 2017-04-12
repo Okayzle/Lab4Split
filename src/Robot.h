@@ -15,36 +15,38 @@ class Robot{
 private:
     Map* myMap;
     Location* myPoint;
-
-    int myRow;
-    int myCol;
-    int gold;
-    int myId;
-    int step;
     std::string myDirections;
+
+    int myRow, myCol, gold, myId, step;
     bool awakeAndAlive = true;
 
-    bool isPointNull(bool robMoved, Location* myNewPoint, char dirc);
+    bool isPointValid(bool robMoved, Location* myNewPoint, char dirc);
+    void goldCheck(Location* myNewPoint);
+    bool nextPointCheck(char direc);
+
+    // if you get this stupid reference, hit me up!
     void restartingLifeInAnotherWorldFromZero();
+
 
 public:
     Robot(Map* map, int startRow, int startCol, std::string directions, int id);
     Map* map();
-    void readRest();
-    void lookAtMap();
+
+    // self methods-
     void displayStatus();
     void atEnd();
     void errorStatus(char dir);
+
+    // movement methods
     bool move(char direc, int step);
     bool isWoke();
 
+    // return methods
     std::string retMyDirc();
     int retMyRow();
     int retMyCol();
     int retMyId();
     int retMyGold();
-    void pointCheck();
-
 };
 
 

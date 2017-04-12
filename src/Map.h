@@ -19,48 +19,39 @@ class Location;
 class Map {
 
 private:
-
+    Robot *robobs[10];
     Location *locations[10][20];
     std::string robotBuilds[10];
-    Robot *robobs[10];
-    //Robot *robotList[10];
-    int maxNums;
-    int row;
-    int col;
-    // NEW- special id for robot, numbers 0-9
-    int id;
-    int iterations;
+
+    int maxNums, row, col, id, iterations, absIt;
     const int ASCCII_ALTER = 48;
+
+    void checkAndMoveRobot(int j, std::string dirc, int len, int posi,
+            int i, char cDirc);
 
 public:
 
+    // map and location checkers
     Map();
-
     bool canMoveTo(Location* destination);
     Location* locationAt(int row, int col);
     Location* eastOf(Location* source);
     Location* northOf(Location* source);
     Location* southOf(Location* source);
     Location* westOf(Location* source);
+
+    // map methods
     void write();
-    // for the new map, I will have to alter the load method, see .cpp for details
     void load();
-    // these are the new methods where we will load in the new data
     void readMap();
-    void readIterations();
-    void readRobots();
-    void makeRobots();
-
-    void setRobCords(int num, int num2);
-    int getRobRow();
-    int getRobCol();
-
     void MatrixAll(std::string Array[]);
-    void moveRobots();
+    void readIterations();
+
+    // robot methods
     void setMemNull();
-    void moveOneRobot();
-    //TODO: REMOVE
-    void printME();
+    void makeRobots();
+    void moveRobots();
+    void printEnd();
 
 };
 

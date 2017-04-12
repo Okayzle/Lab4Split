@@ -9,6 +9,9 @@
 using namespace std;
 // all that we need is
 
+/**
+ * Constructor
+ */
 Location::Location(int row, int col, char token) {
     myRow = row;
     myCol = col;
@@ -17,10 +20,9 @@ Location::Location(int row, int col, char token) {
     myRobot = -1;
 }
 
-int Location::col() {
-    return myCol;
-}
-
+/**
+ * Displays char at location
+ */
 char Location::display() {
     char retTok;
     if (hasRob) {
@@ -35,15 +37,24 @@ char Location::display() {
     return retTok;
 }
 
+/**
+ * sets a token
+ */
 void Location::setToken(int someNum){
     myToken = someNum + 48;
 }
 
+/**
+ * sets a boolean and says the point was entered
+ */
 void Location::enter(int robotNumber) {
     hasRob = true;
     myRobot = robotNumber;
 }
 
+/**
+ * check if has hold
+ */
 bool Location::hasGold() {
     bool check = false;
     if (myToken == '*')
@@ -51,6 +62,9 @@ bool Location::hasGold() {
     return check;
 }
 
+/**
+ * check if has mountain
+ */
 bool Location::hasMountain() {
     bool check = false;
     if (myToken == '#')
@@ -58,27 +72,52 @@ bool Location::hasMountain() {
     return check;
 }
 
+/**
+ * checks if occupied
+ */
 bool Location::occupied() {
     return (hasRob == true || myToken == '#');
 }
 
+/**
+ * check for if there is a robot in particular
+ */
 bool Location::hasRobot() {
     return hasRob;
 }
 
+/**
+ * retrns col
+ */
+int Location::col() {
+    return myCol;
+}
+
+/**
+ * returns row
+ */
 int Location::row() {
     return myRow;
 }
 
+/**
+ * takes gold
+ */
 void Location::takeGold() {
     myToken = ' ';
 }
 
+/**
+ * marks that robot has left
+ */
 void Location::vacate() {
     hasRob = false;
     myRobot = -1;
 }
 
+/**
+ * returns the token
+ */
 char Location::token() {
     return myToken;
 }

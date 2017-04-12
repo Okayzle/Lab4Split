@@ -24,7 +24,7 @@ Map::Map() {
     maxNums = 100;
     iterations = 0;
     id = -1;
-
+    absIt = 0;
 }
 
 /**
@@ -41,10 +41,17 @@ bool Map::canMoveTo(Location* destination) {
     return canMove;
 }
 
+
+/**
+ * returns the location at that point
+ */
+Location* Map::locationAt(int row, int col) {
+    return locations[row][col];
+}
+
 /**
  * Return the location to the east of the source location, or nullptr if the east
  * is at a wall.
- * Lines: 6
  */
 Location* Map::eastOf(Location* source) {
     int row = source->row();
@@ -57,18 +64,23 @@ Location* Map::eastOf(Location* source) {
 }
 
 /**
- * returns the location at that point
- * Lines: 1
+ * Return the location to the west of the source location, or nullptr if that
+ * location is a wall.
  */
-Location* Map::locationAt(int row, int col) {
-    return locations[row][col];
+Location* Map::westOf(Location* source) {
+    int row = source->row();
+    int col = source->col() - 1;
+
+    if (col < 0)
+        return NULL;
+    else
+        return locations[row][col];
 }
 
 /**
  * Return the location to the north of the source location, or nullptr if that
  * location is a wall.
  * Check elsewhere for the location
- * Lines: 6
  */
 Location* Map::northOf(Location* source) {
     int row = source->row() - 1;
@@ -83,7 +95,6 @@ Location* Map::northOf(Location* source) {
 /**
  * Return the location to the south of the source location, or nullptr if that
  * location is a wall.
- * Lines: 6
  */
 Location* Map::southOf(Location* source) {
     int row = source->row() + 1;
@@ -96,24 +107,8 @@ Location* Map::southOf(Location* source) {
 }
 
 /**
- * Return the location to the west of the source location, or nullptr if that
- * location is a wall.
- * Lines: 6
- */
-Location* Map::westOf(Location* source) {
-    int row = source->row();
-    int col = source->col() - 1;
-
-    if (col < 0)
-        return NULL;
-    else
-        return locations[row][col];
-}
-
-/**
  * Write the map to standard output using the same format as load (with the
  * exception that the robot's position is marked by R).
- * Lines: 9
  */
 void Map::write() {
     cout << "+--------------------+" << endl;
@@ -129,8 +124,7 @@ void Map::write() {
 }
 
 /**
- * Read the map from standard input, setting up the location data as required.
- * Lines: 13
+ * Read the map from standard input, this method essentailly acts as a main for the map
  */
 void Map::load() {
     setMemNull();
@@ -138,16 +132,12 @@ void Map::load() {
     readIterations();
     // at this point the map has been read, the iterations has been stored, and the directions to build the robots has been stored
     makeRobots();
-    // printME();
-
-    // we get to here
     moveRobots();
-    //moveOneRobot();
-
+    printEnd();
 }
 
 /**
- * this method ensures that the entire method is set to null
+ * this method ensures that the entire method is set to null for later checking
  */
 void Map::setMemNull() {
     for (int i = 0; i < 10; ++i) {
@@ -155,43 +145,76 @@ void Map::setMemNull() {
     }
 }
 
-void Map::printME() {
-    for (int i = 0; i < 10; ++i) {
-        if (robobs[i] == nullptr) {
-            // do  nothing
-        } else {
-            cout << robobs[i]->isWoke() << endl;
-        }
+/**
+ * This method is responsible for reading the first 11 lines of the map and storing them into a different array.
+ */
+void Map::readMap() {
+    string arrayLines[maxNums], locationLines[9], line;
+    getline(cin, line);
+    int ptr = 0;
+    while (cin && ptr != 11) {
+        arrayLines[ptr] = line;
+        getline(cin, line);
+        ++ptr;
     }
-    cout << "lol";
+    // this loop will remove the locations to a different array
+    for (int i = 1; i < 10; ++i) {
+        // this sets the location lines to the values of 1-10 values
+        locationLines[i - 1] = arrayLines[i];
+    }
+    MatrixAll(arrayLines);
 }
+
+/**
+ * Reads and sets the iterations as well as an absolute  value of it
+ */
+void Map::readIterations() {
+    cin >> iterations;
+    absIt = abs(iterations);
+}
+
+
+/*
+ * This method reads in the robots from std in as long as it's open
+ */
+void Map::makeRobots() {
+    int row, col, id, cntr = 0;
+    std::string directions = "";
+    cntr = 0;
+    cin >> id;
+
+    while (cin) {
+        // make the robot with the new values
+        cin >> row;
+        cin >> col;
+        cin >> directions;
+        robobs[cntr] = new Robot(this, row, col, directions, id);
+        ++cntr;
+        cin >> id;
+    }
+}
+
+/**
+ * This method is responsible for moving the robots via the iterations
+ */
 
 void Map::moveRobots() {
     std::string dirc;
-    int len, posi, absIt;
+    int len, posi;
     char cDirc;
-    absIt = abs(iterations);
-    // for each iteration
     for (int i = 0; i <= absIt - 1; ++i) {
-        // cout << i << ": ";
-        // for each robot
-        if (iterations < 0 ){
+        if (iterations < 0 )
             write();
-        }
         for (int j = 0; j < 10; ++j) {
-            if (robobs[j] != nullptr && robobs[j]->isWoke()) {
-                // get the robot directions and
-                dirc = robobs[j]->retMyDirc();
-                len = dirc.length();
-                posi = (i % len);
-                cDirc = dirc[posi];
-
-                // this crashes!!!
-                robobs[j]->move(cDirc, i);
-            }
+            checkAndMoveRobot(j, dirc, len, posi, i, cDirc);
         }
     }
+}
 
+/**
+ * This method prints out the end message
+ */
+void Map::printEnd() {
     cout << "At end:" << endl;
     for (int i = 0; i < 10; ++i) {
         if (robobs[i] != nullptr) {
@@ -202,100 +225,22 @@ void Map::moveRobots() {
     write();
 }
 
-// STUB
-void Map::moveOneRobot() {
-    for (int i = 0; i < 10; ++i) {
-        robobs[i]->pointCheck();
-    }
-}
-
-void Map::makeRobots() {
-    int row, col, id, cntr = 0;
-    std::string directions = "";
-
-    cntr = 0;
-    // read first robots
-    cin >> id;
-
-    while (cin) {
-        // make the robot with the new values
-        cin >> row;
-        cin >> col;
-        cin >> directions;
-        robobs[cntr] = new Robot(this, row, col, directions, id);
-        ++cntr;
-
-        cin >> id;
-    }
-}
-
-void Map::readMap() {
-    string arrayLines[maxNums], locationLines[9], line;
-    getline(cin, line);
-    int ptr = 0;
-    while (cin && ptr != 11) {
-        arrayLines[ptr] = line;
-        getline(cin, line);
-        ++ptr;
-    }
-    // this loop will remove the locations to a seperate array
-    for (int i = 1; i < 10; ++i) {
-        // this sets the location lines to the values of 1-10 values
-        locationLines[i - 1] = arrayLines[i];
-    }
-    MatrixAll(arrayLines);
-}
-
 /**
- * Reads and sets the iterations
+ * This is a helper method to check if that if the robots can be movedm then yes, they will be moved
  */
-void Map::readIterations() {
-    cin >> iterations;
-    // cout << iterations << " Wow!" << endl;
-}
-
-// TODO: REMOVE!!!
-void Map::readRobots() {
-    string line;
-    int ptr = 0;
-    getline(cin, line);
-    while (cin && ptr <= 10) {
-        robotBuilds[ptr] = line;
-        // cout << line;
-        getline(cin, line);
-        ++ptr;
+void Map::checkAndMoveRobot(int j, std::string dirc, int len, int posi, int i,
+        char cDirc) {
+    if (robobs[j] != nullptr && robobs[j]->isWoke()) {
+        dirc = robobs[j]->retMyDirc();
+        len = dirc.length();
+        posi = (i % len);
+        cDirc = dirc[posi];
+        robobs[j]->move(cDirc, i);
     }
-
-}
-
-/**
- * set coordinates
- * Lines: 2
- */
-void Map::setRobCords(int num, int num2) {
-    row = num;
-    col = num2;
-}
-
-/**
- * gets row
- * Lines: 1
- */
-int Map::getRobRow() {
-    return row;
-}
-
-/**
- * gets column
- * Lines: 1
- */
-int Map::getRobCol() {
-    return col;
 }
 
 /**
  * Puts all the data into a 2-d array
- * Lines: 7
  */
 void Map::MatrixAll(string Array[]) {
     for (int i = 1; i <= 10; ++i) {
